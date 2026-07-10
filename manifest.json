@@ -1,0 +1,21 @@
+{
+  "short_name": "QR Check-In",
+  "name": "QR Event Check-In & Excel Database",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#0B0F19",
+  "theme_color": "#6366F1",
+  "display": "standalone",
+  "orientation": "portrait"
+}

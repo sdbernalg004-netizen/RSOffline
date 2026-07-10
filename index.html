@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Asistencia - QR & Excel</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Iconos (Tabler Icons o FontAwesome para pulir la UI) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366F1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-container">
+                <i class="ti ti-qrcode-scanner logo-icon"></i>
+                <div>
+                    <h1>QR Event Check-In</h1>
+                    <p>Control de asistencia en tiempo real con Excel</p>
+                </div>
+            </div>
+            <div class="file-status-indicator" id="file-status-indicator">
+                <span class="dot"></span> Sin archivo cargado
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="app-content">
+            
+            <!-- Left Side: Excel Loader & Statistics -->
+            <section class="panel-left">
+                <!-- Card 1: File Loader -->
+                <div class="card file-loader-card">
+                    <h2><i class="ti ti-file-excel"></i> Base de Datos Excel</h2>
+                    <p class="card-desc">Carga tu archivo <code>RS.xlsx</code> desde tu carpeta de descargas para comenzar.</p>
+                    
+                    <div class="file-drop-zone" id="drop-zone">
+                        <i class="ti ti-cloud-upload upload-icon"></i>
+                        <span class="file-label">Arrastra tu Excel aquí o haz clic para seleccionar</span>
+                        <input type="file" id="excel-file-input" accept=".xlsx, .xls" style="display: none;">
+                    </div>
+                    
+                    <div id="file-info" class="file-info hidden">
+                        <i class="ti ti-circle-check-filled text-success"></i>
+                        <span id="file-name-display">RS.xlsx</span>
+                        <button id="reset-file-btn" class="btn-icon" title="Cargar otro archivo"><i class="ti ti-x"></i></button>
+                    </div>
+                </div>
+
+                <!-- Card 2: Stats Dashboard -->
+                <div class="card stats-card">
+                    <h2><i class="ti ti-chart-donut"></i> Estadísticas del Evento</h2>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <span class="stat-val" id="stat-total">0</span>
+                            <span class="stat-lbl">Invitados Totales</span>
+                        </div>
+                        <div class="stat-box success">
+                            <span class="stat-val" id="stat-attended">0</span>
+                            <span class="stat-lbl">Asistieron</span>
+                        </div>
+                        <div class="stat-box info">
+                            <span class="stat-val" id="stat-pending">0</span>
+                            <span class="stat-lbl">Pendientes</span>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <div class="progress-labels">
+                        <span>Progreso de registro</span>
+                        <span id="progress-percentage">0%</span>
+                    </div>
+                </div>
+
+                <!-- Card 3: Download updated excel -->
+                <div class="card download-card">
+                    <button id="download-excel-btn" class="btn-primary" disabled>
+                        <i class="ti ti-download"></i> Descargar Excel Actualizado
+                    </button>
+                    <p class="download-hint">Descarga los cambios para actualizar tu archivo original de Excel.</p>
+                </div>
+            </section>
+
+            <!-- Right Side: QR Scanner & Real-Time Alert Log -->
+            <section class="panel-right">
+                <!-- Card 4: Scanner -->
+                <div class="card scanner-card">
+                    <div class="scanner-header">
+                        <h2><i class="ti ti-device-camera"></i> Escáner de Códigos QR</h2>
+                        <div class="camera-controls">
+                            <select id="camera-select" class="select-input">
+                                <option value="">Seleccionando cámara...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="scanner-viewport-wrapper">
+                        <div id="qr-reader" class="scanner-viewport"></div>
+                        <div id="scanner-overlay" class="scanner-overlay hidden">
+                            <div class="scanner-laser"></div>
+                        </div>
+                    </div>
+
+                    <div class="scanner-footer">
+                        <button id="toggle-camera-btn" class="btn-secondary" disabled>
+                            <i class="ti ti-camera"></i> Iniciar Escáner
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card 5: Real-time scan result -->
+                <div class="card result-card" id="result-card">
+                    <div class="result-placeholder" id="result-placeholder">
+                        <i class="ti ti-scan icon-pulse"></i>
+                        <p>Esperando escaneo de código QR...</p>
+                    </div>
+                    
+                    <div class="result-details hidden" id="result-details">
+                        <div class="result-status-icon-wrapper" id="result-status-icon-wrapper">
+                            <i class="ti ti-check" id="result-icon"></i>
+                        </div>
+                        <div class="result-text">
+                            <h3 id="result-title">¡Registro Exitoso!</h3>
+                            <p class="guest-name" id="result-name">Nombre del Invitado</p>
+                            <div class="guest-meta-grid">
+                                <div><strong>ID:</strong> <span id="result-id">-</span></div>
+                                <div><strong>Pases:</strong> <span id="result-qty">-</span></div>
+                                <div><strong>Hora:</strong> <span id="result-time">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Guest List Section -->
+        <section class="guest-list-section card">
+            <div class="list-header">
+                <h2><i class="ti ti-users"></i> Lista Completa de Invitados</h2>
+                <div class="list-controls">
+                    <div class="search-box">
+                        <i class="ti ti-search"></i>
+                        <input type="text" id="search-input" placeholder="Buscar invitado o ID..." disabled>
+                    </div>
+                    <div class="filter-box">
+                        <button class="btn-filter active" data-filter="all">Todos</button>
+                        <button class="btn-filter" data-filter="attended">Asistieron</button>
+                        <button class="btn-filter" data-filter="pending">Pendientes</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="guest-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Invitado</th>
+                            <th>Cantidad</th>
+                            <th>Código QR</th>
+                            <th>Estado Asistencia</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="guest-table-body">
+                        <tr>
+                            <td colspan="6" class="table-empty">
+                                <i class="ti ti-file-excel-off"></i>
+                                Carga un archivo Excel para ver la lista de invitados.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Librería SheetJS para manipular archivos Excel en JavaScript puro -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Librería robusta para leer códigos QR desde la cámara -->
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="app.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker registrado con éxito', reg))
+            .catch(err => console.error('Error registrando el Service Worker', err));
+        });
+      }
+    </script>
+</body>
+</html>
