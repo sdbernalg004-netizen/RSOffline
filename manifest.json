@@ -34,6 +34,15 @@
       "purpose": "maskable"
     }
   ],
+  "screenshots": [
+    {
+      "src": "screenshot.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Pantalla principal del escáner de asistencia"
+    }
+  ],
   "start_url": "./index.html",
   "scope": "./",
   "background_color": "#0B0F19",
